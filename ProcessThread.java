@@ -13,13 +13,19 @@ random number, where Ts<W<2NTs
 
 
 public class ProcessThread extends Thread{
+    //initialize variables
     private static Medium medium = new Medium();;
     private ThreadLocalRandom rng = new ThreadLocalRandom();
     private int Ts = 100;
     private int Td = 240*Ts;
+
+    //this method will run on ___.start();
     public void run(){
+        //sleep for Td then check if there is a message until there is one
         sleep();  
         checkMessage();
+
+        //check if medium is in use. If it is sleep then check again. After it is clear set it to busy.
         boolean inUse = medium.getUse();
         if(inUse){
             while(inUse){
@@ -28,13 +34,25 @@ public class ProcessThread extends Thread{
             }
         }
         medium.setUse(true);
+
+        //sleep for Tdifs
         this.sleep(30*Ts);
-        long Tdifs = rng.nextLong(Ts, (2*8*Ts));
-        this.sleep(Tdifs);
+
+        //sleep for Tcw
+        long Tcw = rng.nextLong(Ts, (2*8*Ts));
+        this.sleep(Tcw);
+
+        //*********************
+        //Wait for message transmission. Not sure if sleep is allowed here or he wants a diff method
         this.sleep((long).45*Td);
+        //*********************
+        //Wait for ACK. Again not sure if sleep is allowed.
         this.sleep(10*Ts);
+        //setuse to false
         medium.setUse(false);
-        this.sleep(Tdifs);
+
+        //wait for another Tdifs.
+        this.sleep(Ts*30);
 
 
 
