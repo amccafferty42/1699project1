@@ -15,23 +15,32 @@ random number, where Ts<W<2NTs
 public class ProcessThread extends Thread{
     //initialize variables
     private static Medium medium = new Medium();
-    private ThreadLocalRandom rng = new ThreadLocalRandom();
+    private ThreadLocalRandom rng;
     private int Ts = 100;
     private int Td = 240*Ts;
     private int Tdifs = 30*Ts;
     private int k;
-    private int W = rng.nextInt(Ts, (2*8*Ts));
+    private int W;
     private int Tcw;
-    private int Tp;
     private int Ttot = 0;
     private int Tifs = 10*Ts;
     private boolean firstRun = true;
 
     private int M;
+    private int P;
+    private int Tp;
     
     
 
     //this method will run on ___.start();
+
+    public ProcessThread(int m, int p, int tp){
+        M = m;
+        P = p;
+        Tp = tp;
+        rng = ThreadLocalRandom.current();
+        W  = rng.nextInt(Ts, (2*8*Ts));
+    }
     public void run(){
         //sleep for Td then check if there is a message until there is one
         if(firstRun){
@@ -40,52 +49,90 @@ public class ProcessThread extends Thread{
         }
         //check if medium is in use. If it is sleep then check again.
         boolean inUse = medium.getUse();
+        System.out.println("Busy: " + inUse);
         if(inUse){
             while(inUse){
                 Ttot += Ts;
-                this.sleep(Ts);
+                try{
+                    this.sleep(Ts);
+                }
+                catch(InterruptedException i){
+                    System.err.println(i);
+                }
                 inUse = medium.getUse();
             }
         }
         
-
+        System.out.println("permission to use");
         //sleep for Tdifs and increment total time
-        this.sleep(Tdifs);
+        try{
+            this.sleep(Tdifs);
+        }
+        catch(InterruptedException i){
+            System.err.println(i);
+        }
         Ttot +=Tdifs;
 
         //calculate Tcw and sleep for Ts. increment Ttot
         k =1;
         Tcw = k * W;
-        this.sleep(Ts);
+        try{
+            this.sleep(Ts);
+        }
+        catch(InterruptedException i){
+            System.err.println(i);
+        }
         Tcw -= Ts;
         Ttot += Ts;
 
         //check if medium is busy. If not checks to make sure Tcw < 0, if true sets medium to busy and begins
         //transmission. If false sleeps and decrements Tcw while incrementing Ttot.
         //if medium is busy runs through checkAfterFail.
+        System.out.println("weird part of the thing where checkuse can loop");
         while(!checkUse()){
-            this.sleep(Ts);
+            try{
+                this.sleep(Ts);
+            }
+            catch(InterruptedException i){
+                System.err.println(i);
+            }
             Tcw -= Ts;
             Ttot += Ts;
         }
         medium.setUse(true);
        
-        
+    
+        System.out.println("Sending packets");
 
         //*********************
         //Wait for message transmission. Not sure if sleep is allowed here or he wants a diff method
         //this.sleep((long).45*Td); Also have to ask if ACK time is multiplied by M.
-        this.sleep(Tp*M);
+        try{
+            this.sleep(Tp*M);
+        }
+        catch(InterruptedException i){
+            System.err.println(i);
+        }
         Ttot += (Tp*M);
         //*********************
         //Wait for ACK. Again not sure if sleep is allowed.
-        this.sleep(Tifs);
+        try{
+            this.sleep(Tifs);
+        }
+        catch(InterruptedException i){
+            System.err.println(i);
+        }
         Ttot += Tifs;
         //setuse to false
         medium.setUse(false);
 
         //wait for another Tdifs.
-        this.sleep(Tdifs);
+        try{
+            this.sleep(Tdifs);
+        }
+        catch(InterruptedException i){
+            System.err.println(i);
+        }
         Ttot += Tdifs;
 
 
@@ -104,7 +151,12 @@ public class ProcessThread extends Thread{
             else return false;
         } 
         else{
-            this.sleep(Ts);
+            try{
+                this.sleep(Ts);
+            }
+            catch(InterruptedException i){
+                System.err.println(i);
+            }
             Ttot += Ts;
              inUse = checkAfterFail();
             return inUse;
@@ -117,13 +169,23 @@ public class ProcessThread extends Thread{
     private boolean checkAfterFail(){
         boolean inUse = medium.getUse();
         if(inUse){
-            this.sleep(Ts);
+            try{
+                this.sleep(Ts);
+            }
+            catch(InterruptedException i){
+                System.err.println(i);
+            }
             Ttot += Ts;
             inUse = checkAfterFail();
             return inUse;
         }
         else{
-            this.sleep(Tdifs);
+            try{
+                this.sleep(Tdifs);
+            }
+            catch(InterruptedException i){
+                System.err.println(i);
+            }
             Ttot += Tdifs;
             if(Tcw < 0){
                 k = 2*k;
@@ -135,14 +197,19 @@ public class ProcessThread extends Thread{
     }
     //sleep for Td
     private void sleep(){
-        this.sleep(Td);
+        try{
+            this.sleep(Td);
+        }
+        catch(InterruptedException i){
+            System.err.println(i);
+        }
 
     }
 
     //if there is a message return to program. If no message sleep then check again.
     private void checkMessage(){
         int hasMessage = rng.nextInt(100);
-        if(hasMessage >= 40){
+        if(hasMessage >= P){
             sleep();
             checkMessage();
         }
@@ -156,10 +223,13 @@ public class ProcessThread extends Thread{
     //checks for more data to send. If none print Ttot then exit. If data restart run();
     private void checkMoreData(){
         int hasMessage = rng.nextInt(100);
-        if(hasMessage >= 40){
+        System.out.println(hasMessage);
+        if(hasMessage >= P){
             System.out.println("Total Time: " + Ttot);
+            System.out.println("Ending thread" + this.getId());
         }
         else{
+            System.out.println("Going again in Thread " + this.getId());
             firstRun = false;
             this.run();
         }
