@@ -1,15 +1,15 @@
-private class Medium{
+public class Medium{
     //variable to see if medium is in use
     private static boolean inUse;
-    private void init(){
+    public Medium(){
         inUse = false;
     }
     //set true false
-    private void setUse(boolean toBe){
+    public void setUse(boolean toBe){
         inUse = toBe;
     }
     //return if in use
-    private boolean getUse(){
+    public boolean getUse(){
         return inUse;
     }
 }
