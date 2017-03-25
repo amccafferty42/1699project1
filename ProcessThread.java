@@ -62,7 +62,7 @@ public class ProcessThread extends Thread{
                 inUse = medium.getUse();
             }
         }
-        
+        System.out.println("Running thread: " + this.getId());
         System.out.println("permission to use");
         //sleep for Tdifs and increment total time
         try{
@@ -99,6 +99,7 @@ public class ProcessThread extends Thread{
             Tcw -= Ts;
             Ttot += Ts;
         }
+        // I think we need a semaphore here, will ask him on tuesday
         medium.setUse(true);
        
     
@@ -208,7 +209,9 @@ public class ProcessThread extends Thread{
 
     //if there is a message return to program. If no message sleep then check again.
     private void checkMessage(){
-        int hasMessage = rng.nextInt(100);
+        int hasMessage = rng.current().nextInt(100);
+        System.out.println(this.getId() + " hasMessage: " + hasMessage);
+        System.out.println(P);
         if(hasMessage >= P){
             sleep();
             checkMessage();
@@ -222,7 +225,7 @@ public class ProcessThread extends Thread{
 
     //checks for more data to send. If none print Ttot then exit. If data restart run();
     private void checkMoreData(){
-        int hasMessage = rng.nextInt(100);
+        int hasMessage = rng.current().nextInt(100);
         System.out.println(hasMessage);
         if(hasMessage >= P){
             System.out.println("Total Time: " + Ttot);
