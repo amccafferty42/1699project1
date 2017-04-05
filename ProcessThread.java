@@ -99,7 +99,7 @@ public class ProcessThread extends Thread{
             Tcw -= Ts;
             Ttot += Ts;
         }
-        // I think we need a semaphore here, will ask him on tuesday
+        // NEED A SEMAPHORE/MUTEX HERE
         medium.setUse(true);
        
     
